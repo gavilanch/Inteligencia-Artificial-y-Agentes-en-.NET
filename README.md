@@ -2,4 +2,4 @@
 
 Crea Chatbots, RAG, servidores MCP y Apps Inteligentes
 
-Link del curso: PENDIENTE
+Link del curso: [Click aquí](https://felipe-gavilan.azurewebsites.net/api/Redireccion?curso=ia-y-agentes-en-dotnet)
