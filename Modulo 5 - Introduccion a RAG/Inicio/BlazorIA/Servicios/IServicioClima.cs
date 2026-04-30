@@ -1,6 +1,7 @@
-﻿namespace BlazorIA.Servicios;
-
-internal interface IServicioClima
+﻿namespace BlazorIA.Servicios
 {
-    Task<string> ObtenerClima(string ciudad);
+    internal interface IServicioClima
+    {
+        Task<string> ObtenerClima(string ciudad);
+    }
 }

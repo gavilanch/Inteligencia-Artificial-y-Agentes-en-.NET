@@ -1,6 +1,8 @@
-﻿namespace BlazorIA.DTOs;
-
-public enum RolMensaje
+﻿namespace BlazorIA.DTOs
 {
-    Usuario, IA, Sistema
+    public enum RolMensaje
+    {
+        Usuario, IA, Sistema
+    }
+
 }

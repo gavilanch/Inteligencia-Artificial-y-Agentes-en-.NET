@@ -1,4 +1,7 @@
 ﻿@page "/"
+@using BlazorIA.DTOs
+@using BlazorIA.Servicios.Chatbots
+@using BlazorIA.Utilidades
 @implements IDisposable
 @inject IChatbot ChatSession
 @inject IJSRuntime JS
@@ -14,10 +17,55 @@
                 <div class="mensaje-body">@mensaje.Texto</div>
             </div>
         }
+
+        @if (ChatSession.AprobacionPendiente is not null)
+        {
+            <div class="aprobacion-tool">
+                <h4>La IA desea ejecutar una acción sensible</h4>
+                <p><strong>Tool:</strong> @ChatSession.AprobacionPendiente.NombreTool</p>
+
+                @if (ChatSession.AprobacionPendiente.Argumentos.Count > 0)
+                {
+                    <ul>
+                        @foreach (var argumento in ChatSession.AprobacionPendiente.Argumentos)
+                        {
+                            <li><strong>@argumento.Key:</strong> @argumento.Value</li>
+                        }
+                    </ul>
+                }
+
+                <div class="acciones-aprobacion">
+                    <button class="btn btn-success"
+                            @onclick="Aprobar"
+                            disabled="@ChatSession.EstaProcesando">
+                        Aprobar
+                    </button>
+
+                    <button class="btn btn-danger"
+                            @onclick="Rechazar"
+                            disabled="@ChatSession.EstaProcesando">
+                        Rechazar
+                    </button>
+                </div>
+            </div>
+        }
+
     </div>
 
     <EditForm Model="modelo" OnValidSubmit="Enviar">
         <div class="entrada-chat">
+
+            <select class="form-select selector-modelo"
+                    @bind="modeloSeleccionado"
+                    @bind:after="OnCambioModelo"
+                    disabled="@(ChatSession.EstaProcesando || ChatSession.AprobacionPendiente is not null)">
+                @foreach (var item in modelosDisponibles)
+                {
+                    <option value="@item">@item</option>
+                }
+            </select>
+
+
             <input class="form-control"
                    @bind="modelo.Texto"
                    @bind:event="oninput"
@@ -39,18 +87,46 @@
     </EditForm>
 </div>
 
+
 @code {
     private readonly ChatInputModel modelo = new();
     private ElementReference contenedorMensajes;
     private bool necesitaScroll;
 
+    private readonly List<string> modelosDisponibles = ModelosIA.ObtenerModelosDisponibles().ToList();
+    private string modeloSeleccionado = ModelosIA.ObtenerModeloPorDefecto;
+
+    private void OnCambioModelo()
+    {
+        ChatSession.SetearModelo(modeloSeleccionado);
+    }
+
     private bool DeshabilitarEnvio =>
-        ChatSession.EstaProcesando ||
-        string.IsNullOrWhiteSpace(modelo.Texto);
+    ChatSession.EstaProcesando ||
+    ChatSession.AprobacionPendiente is not null ||
+    string.IsNullOrWhiteSpace(modelo.Texto);
 
     protected override void OnInitialized()
     {
         ChatSession.OnChange += ManejarCambioChat;
+    }
+
+    private void ManejarCambioChat()
+    {
+        necesitaScroll = true;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Aprobar()
+    {
+        necesitaScroll = true;
+        await ChatSession.ResolverAprobacionAsync(true);
+    }
+
+    private async Task Rechazar()
+    {
+        necesitaScroll = true;
+        await ChatSession.ResolverAprobacionAsync(false);
     }
 
     private async Task Enviar()
@@ -67,17 +143,11 @@
 
         await ChatSession.EnviarMensajeAsync(texto);
     }
-   
+
     private Task Cancelar()
     {
         ChatSession.CancelarRespuestaActual();
         return Task.CompletedTask;
-    }
-
-    private void ManejarCambioChat()
-    {
-        necesitaScroll = true;
-        InvokeAsync(StateHasChanged);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -110,8 +180,11 @@
         ChatSession.OnChange -= ManejarCambioChat;
     }
 
+
     private class ChatInputModel
     {
         public string Texto { get; set; } = string.Empty;
     }
+
+
 }

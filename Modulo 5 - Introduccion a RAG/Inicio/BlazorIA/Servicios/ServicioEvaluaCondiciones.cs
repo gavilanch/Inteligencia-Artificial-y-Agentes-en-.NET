@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ChatbotSimple.Servicios;
+namespace BlazorIA.Servicios;
 
 internal class ServicioEvaluaCondiciones
 {
@@ -41,5 +41,6 @@ internal class ServicioEvaluaCondiciones
             return "Puedes salir, pero no es el clima ideal";
 
         return "Condiciones normales";
+
     }
 }

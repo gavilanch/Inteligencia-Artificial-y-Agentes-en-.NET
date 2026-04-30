@@ -1,7 +1,8 @@
-﻿namespace BlazorIA.DTOs;
-
-public class MensajeChatUI
+﻿namespace BlazorIA.DTOs
 {
-    public RolMensaje Rol { get; set; } 
-    public string Texto { get; set; } = string.Empty;
+    public class MensajeChatUI
+    {
+        public RolMensaje Rol { get; set; }
+        public string Texto { get; set; } = string.Empty;
+    }
 }
